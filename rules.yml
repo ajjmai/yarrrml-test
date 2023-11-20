@@ -1,0 +1,64 @@
+
+prefixes:
+  rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+  rdfs: http://www.w3.org/2000/01/rdf-schema#
+  temp: http://example.com/temp/
+  grel: http://users.ugent.be/~bjdmeest/function/grel.ttl#
+  fno: https://w3id.org/function/ontology#
+
+
+mappings:
+  act:
+    sources:
+      - [test.xml~xpath, //preface]
+    subjects: "temp:$(./p/docNumber)"
+    predicateobjects:
+      - predicates: a
+        objects: temp:AknStatute
+
+      # ok, returns "ARVONLISÄVEROLAKI"
+      - predicates: temp:title_a
+        objects:
+          - function: grel:toUpperCase
+            parameters:
+            - [grel:valueParameter, $(./p/docTitle)]
+
+      # ok, returns "ARVONLISÄVEROLAKI"
+      - predicates: temp:title_b
+        objects:
+          - function: grel:toUpperCase(valueParameter = $(./p/docTitle))
+
+      # does not work, returns "Arvonlisäverolaki", should return "Arvonlisävero"
+      - predicates: temp:title_c
+        objects:
+          - function: grel:string_chomp
+            parameters:
+            - [grel:valueParameter, $(./p/docTitle)]
+            - [grel:param_string_sep, "laki"]
+
+      # does not work, returns "Arvonlisäverolaki", should return "Arvonlisävero"
+      - predicates: temp:title_d
+        objects:
+          - function: grel:string_chomp(grel:valueParameter = "Arvonlisäverolaki", grel:param_string_sep = "laki")
+
+      # does not work, causes error with rmlmapper
+      # java.lang.NullPointerException: Cannot invoke "java.lang.Integer.intValue()" because "from" is null
+      # - predicates: temp:title_e
+      #   objects:
+      #     - function: grel:string_substring
+      #       parameters:
+      #       - [grel:valueParameter, $(./p/docTitle)]
+      #       - [grel:p_int_i_from, 3]
+
+      # does not work, causes error with rmlmapper
+      # java.lang.NullPointerException: Cannot invoke "java.lang.Integer.intValue()" because "from" is null
+      # - predicates: temp:title_f
+      #   objects:
+      #     - function: grel:string_substring(grel:valueParameter = "Arvonlisäverolaki", grel:p_int_i_from = 3)
+
+      # does not work, returns 0, should return 3
+      - predicates: temp:x_a
+        objects:
+          - function: grel:array_length
+            parameters:
+            - [grel:param_a, [1, 2, 3]]
